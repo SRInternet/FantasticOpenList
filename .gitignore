@@ -1,0 +1,16 @@
+# 编辑器与 AI 工具配置，不纳入发布
+.roo/
+
+# 临时产物与调试中间文件，不纳入发布
+.tmp/
+
+# 浏览器配置缓存
+.tmp-edge-profile/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志
+*.log

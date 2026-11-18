@@ -1,0 +1,625 @@
+<style>
+/* ================= 基础变量与背景修正 ================= */
+:root {
+  /* 主界面背景：填入图片直链，留空为 url("") */
+  --ol-bg-light: url("");
+  --ol-bg-dark: url("");
+}
+
+.hope-ui-light, .hope-ui-dark {
+  --hope-colors-background: transparent !important;
+}
+
+/* ================= 独立背景层 ================= */
+#ol-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-color: #0b0b0b;
+  transition: background-image 0.3s ease;
+}
+
+.hope-ui-light #ol-bg-layer {
+  background-image: var(--ol-bg-light);
+}
+
+.hope-ui-dark #ol-bg-layer {
+  background-image: var(--ol-bg-dark);
+}
+
+/* 清空原生容器背景 */
+html, body, #root, .App {
+  background: transparent !important;
+}
+
+/* ================= 玻璃拟态 ================= */
+/* 顶部导航栏 */
+#root > .header,
+header {
+  background-color: transparent !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 文件列表与侧边栏 */
+.hope-ui-light .obj-box,
+.hope-ui-light .body > .nav {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+.hope-ui-dark .obj-box,
+.hope-ui-dark .body > .nav {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(20, 20, 20, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ================= 浮动面板与按钮 ================= */
+/* 侧边栏 / 齿轮按钮：Hope UI 运行时哈希类名，OpenList 版本变化时需重新获取 */
+.hope-ui-light .hope-c-PJLV-ijgzmFG-css {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.hope-ui-dark .hope-c-PJLV-ijgzmFG-css {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 代码块与图标按钮 */
+.hope-ui-light pre, .hope-ui-light .hope-icon-button {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.65) !important;
+}
+.hope-ui-dark pre, .hope-ui-dark .hope-icon-button {
+  backdrop-filter: blur(10px);
+  background-color: rgba(20, 20, 20, 0.55) !important;
+}
+
+.body > .nav {
+  border-radius: 16px;
+}
+.body > .nav::after {
+  display: none;
+}
+
+/* ================= 左下角日夜切换按钮 ================= */
+button#custom-theme-toggle {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+.hope-ui-light button#custom-theme-toggle {
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #333;
+}
+.hope-ui-dark button#custom-theme-toggle {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+button#custom-theme-toggle:hover {
+  transform: scale(1.1);
+}
+</style>
+
+<!-- ================= 主界面背景与日夜切换（站点原生注入部分） ================= -->
+<script>
+/* ================= 主界面背景层保活 ================= */
+(function () {
+  function ensureBgLayer() {
+    if (!document.getElementById("ol-bg-layer")) {
+      var bg = document.createElement("div");
+      bg.id = "ol-bg-layer";
+      document.body.insertBefore(bg, document.body.firstChild);
+    }
+  }
+
+  /* ================= 日夜切换状态管理 ================= */
+  var STORAGE_KEY = "openlist-custom-theme";
+  function getThemeTargets() { return document.querySelectorAll(".hope-ui-light, .hope-ui-dark"); }
+  function detectTheme() {
+    var targets = getThemeTargets();
+    for (var i = 0; i < targets.length; i++) { if (targets[i].classList.contains("hope-ui-dark")) return "dark"; }
+    return "light";
+  }
+  function applyTheme(theme) {
+    var dark = theme === "dark";
+    var targets = getThemeTargets();
+    for (var i = 0; i < targets.length; i++) {
+      targets[i].classList.remove("hope-ui-light", "hope-ui-dark");
+      targets[i].classList.add(dark ? "hope-ui-dark" : "hope-ui-light");
+    }
+    try { localStorage.setItem(STORAGE_KEY, dark ? "dark" : "light"); } catch (_e) {}
+    setTimeout(function() {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }, 100);
+  }
+  function toggleTheme(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    var next = detectTheme() === "light" ? "dark" : "light";
+    applyTheme(next);
+    updateButtonIcon();
+  }
+  /* ================= 左下角切换按钮 ================= */
+  function ensureSwitchButton() {
+    var btn = document.getElementById("custom-theme-toggle");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = "custom-theme-toggle";
+      btn.type = "button";
+      btn.title = "切换日间/夜间模式";
+      document.body.appendChild(btn);
+      btn.addEventListener("click", toggleTheme, true);
+    }
+    updateButtonIcon();
+  }
+  function updateButtonIcon() {
+    var btn = document.getElementById("custom-theme-toggle");
+    if (!btn) return;
+    var isDark = detectTheme() === "dark";
+    btn.innerHTML = isDark 
+      ? '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>'
+      : '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+  }
+  /* ================= 主题恢复与启动 ================= */
+  function restoreTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (_e) {}
+    if (saved === "light" || saved === "dark") { applyTheme(saved); } else { applyTheme("dark"); }
+  }
+  function boot() {
+    ensureBgLayer();
+    restoreTheme();
+    ensureSwitchButton();
+    var observer = new MutationObserver(function() { ensureBgLayer(); ensureSwitchButton(); });
+    observer.observe(document.body, { childList: true });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else { boot(); }
+})();
+</script>
+
+<!-- =========================================================================
+     OpenList /@login 登录页专属背景（壁纸 / 模糊 / 暗角 / 波浪隐藏）
+     ========================================================================= -->
+<style id="ol-login-bg-style">
+/* ================= 登录页壁纸配置 ================= */
+:root {
+  /* 登录页壁纸：填入图片直链，留空为 url("") */
+  --ol-lbg-light: url("");
+  --ol-lbg-dark: url("");
+
+  /* 壁纸模糊度，0px 为不模糊 */
+  --ol-lbg-blur: 5px;
+
+  /* 暗角遮罩深度，0 ~ 1 */
+  --ol-lbg-overlay: 0.35;
+}
+
+/* ================= 原版 LoginBg 波浪隐藏 ================= */
+.ol-lbg-hidden {
+  display: none !important;
+}
+
+/* :has() 静态兜底，仅在壁纸层带 data-ol-login="1" 时生效 */
+@supports selector(:has(*)) {
+  body:has(#ol-login-bg[data-ol-login="1"]) #root div:not(:has(input, textarea, select, button, a)):has(> div > svg) {
+    display: none !important;
+  }
+}
+
+/* ================= 登录卡片容器透明化 ================= */
+.ol-lbg-transparent {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* ================= 登录页壁纸层 ================= */
+#ol-login-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: none;
+  opacity: 0;
+  transition: opacity 0.6s ease, filter 0.6s ease;
+  filter: blur(var(--ol-lbg-blur));
+  /* 外扩 6%，blur 边缘落在视口外 */
+  transform: scale(1.06);
+}
+
+#ol-login-bg[data-ol-active="1"] {
+  opacity: 1;
+}
+
+/* ================= 暗角遮罩 ================= */
+#ol-login-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 45%,
+    rgba(0, 0, 0, 0) 35%,
+    rgba(0, 0, 0, var(--ol-lbg-overlay)) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#ol-login-bg[data-ol-active="1"]::after {
+  opacity: 1;
+}
+
+/* ================= 深浅色壁纸切换 ================= */
+.hope-ui-light #ol-login-bg[data-ol-active="1"],
+#ol-login-bg[data-ol-theme="light"][data-ol-active="1"] {
+  background-image: var(--ol-lbg-light);
+}
+
+.hope-ui-dark #ol-login-bg[data-ol-active="1"],
+#ol-login-bg[data-ol-theme="dark"][data-ol-active="1"] {
+  background-image: var(--ol-lbg-dark);
+}
+
+/* ================= 减弱动效偏好 ================= */
+@media (prefers-reduced-motion: reduce) {
+  #ol-login-bg,
+  #ol-login-bg::after {
+    transition: none !important;
+  }
+}
+</style>
+
+<script>
+/* ================= 登录页背景运行时 ================= */
+(function () {
+  "use strict";
+
+  /* 重复引入时退出 */
+  if (window.__OL_LOGIN_BG_BOOTED__) return;
+  window.__OL_LOGIN_BG_BOOTED__ = true;
+
+  /* ---------- 常量与状态 ---------- */
+  var BG_ID = "ol-login-bg";
+  var HIDE_CLASS = "ol-lbg-hidden";
+  var TRANSPARENT_CLASS = "ol-lbg-transparent";
+  var THEME_ATTR = "data-ol-theme";
+  var LOGIN_ATTR = "data-ol-login";
+  var SHOW_PATH = "/@login";
+
+  var routerHooked = false;
+  var themeObserver = null;
+  var loginObserver = null;
+  var pollTimer = 0;
+  var patchesApplied = false;
+
+  /* ---------- 工具函数 ---------- */
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  /* 读取 :root 壁纸变量并剥离 url() 包装，空值或 none 返回空串 */
+  function readWallpaper(varName) {
+    var raw = "";
+    try {
+      raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    } catch (e) {
+      return "";
+    }
+    if (!raw || raw.toLowerCase() === "none") return "";
+    var m = raw.match(/^url\((["']?)(.*?)\1\)$/i);
+    var url = m ? m[2].trim() : "";
+    if (!url || url === location.href || url === location.pathname) return "";
+    return url;
+  }
+
+  /* 取首个带 Hope UI 主题类的元素 */
+  function detectTheme() {
+    var nodes = document.querySelectorAll(".hope-ui-light, .hope-ui-dark");
+    for (var i = 0; i < nodes.length; i++) {
+      var c = nodes[i].classList;
+      if (c && c.contains("hope-ui-dark")) return "dark";
+      if (c && c.contains("hope-ui-light")) return "light";
+    }
+    return null;
+  }
+
+  /* ---------- DOM 定位 ---------- */
+
+  /* 由 input[name=username] 向上查找登录卡片 */
+  function findLoginCard() {
+    var input = document.querySelector("input[name=username]");
+    if (!input) return null;
+    var node = input.parentElement;
+    var depth = 0;
+    while (node && depth < 6) {
+      if (node.querySelector && node.querySelector("input[name=password], input[name=otp]")) {
+        return node;
+      }
+      node = node.parentElement;
+      depth++;
+    }
+    return input.closest("div");
+  }
+
+  /* 登录卡片的父级全屏容器 */
+  function findStage(card) {
+    return card ? card.parentElement : null;
+  }
+
+  /* LoginBg 波浪层定位：含 <svg> 且不含表单控件的容器 */
+  function findLoginBgNode(stage) {
+    var candidates = stage ? stage.children : [];
+    for (var i = 0; i < candidates.length; i++) {
+      var child = candidates[i];
+      if (!child || child.nodeType !== 1 || child.tagName === "FORM") continue;
+      var hasSvg = !!child.querySelector("svg");
+      var hasInput = !!child.querySelector("input, textarea, select, button, a[href]");
+      if (hasSvg && !hasInput) return child;
+    }
+    /* 兜底：在 #root 下按大面积 SVG 反查 */
+    var root = document.getElementById("root");
+    if (root) {
+      var svgs = root.querySelectorAll("svg");
+      for (var j = 0; j < svgs.length; j++) {
+        var rect = svgs[j].getBoundingClientRect();
+        if (rect.width > 180 || rect.height > 180) {
+          var box = svgs[j].parentElement;
+          if (box && !box.querySelector("input, button")) return box;
+        }
+      }
+    }
+    return null;
+  }
+
+  /* ---------- 壁纸层生命周期 ---------- */
+
+  /* 壁纸层插在 #ol-bg-layer 之后，同为 z-index:-1 时后者居上层 */
+  function ensureBgLayer() {
+    var existing = document.getElementById(BG_ID);
+    var host = document.body || document.documentElement;
+    if (!host) return null;
+
+    var layer = existing;
+    if (!layer) {
+      layer = document.createElement("div");
+      layer.id = BG_ID;
+      layer.setAttribute("aria-hidden", "true");
+    }
+
+    var oldBg = document.getElementById("ol-bg-layer");
+    var root = document.getElementById("root");
+    if (oldBg) {
+      if (layer.previousElementSibling !== oldBg) {
+        host.insertBefore(layer, oldBg.nextSibling);
+      }
+    } else if (!existing) {
+      if (root) {
+        host.insertBefore(layer, root);
+      } else {
+        host.insertBefore(layer, host.firstChild);
+      }
+    }
+    return layer;
+  }
+
+  /* 按当前主题挂载激活态与主题标记 */
+  function syncWallpaper() {
+    var layer = document.getElementById(BG_ID);
+    if (!layer) return;
+    if (location.pathname.indexOf(SHOW_PATH) !== 0) return;
+
+    var theme = detectTheme();
+    var hasCurrent =
+      (theme === "light" && !!readWallpaper("--ol-lbg-light")) ||
+      (theme === "dark" && !!readWallpaper("--ol-lbg-dark"));
+
+    if (hasCurrent) {
+      if (layer.getAttribute("data-ol-active") !== "1") layer.setAttribute("data-ol-active", "1");
+      if (layer.getAttribute(THEME_ATTR) !== theme) layer.setAttribute(THEME_ATTR, theme);
+    } else {
+      layer.removeAttribute("data-ol-active");
+    }
+  }
+
+  function ensureAliveLayer() {
+    return ensureBgLayer();
+  }
+
+  /* ---------- 补丁挂载 / 还原 ---------- */
+
+  /* 登录页：建层、打标记、隐藏波浪、透明化容器 */
+  function apply() {
+    if (location.pathname.indexOf(SHOW_PATH) !== 0) {
+      removePatches();
+      return;
+    }
+
+    var layer = ensureAliveLayer();
+    if (layer && layer.getAttribute(LOGIN_ATTR) !== "1") {
+      layer.setAttribute(LOGIN_ATTR, "1");
+    }
+    patchesApplied = true;
+
+    var card = findLoginCard();
+    if (!card) {
+      /* 登录卡片未就绪，等待挂载 */
+      syncWallpaper();
+      watchLogin();
+      return;
+    }
+
+    var stage = findStage(card);
+    if (stage) {
+      if (!stage.classList.contains(TRANSPARENT_CLASS)) stage.classList.add(TRANSPARENT_CLASS);
+      var bgNode = findLoginBgNode(stage);
+      if (bgNode && !bgNode.classList.contains(HIDE_CLASS)) bgNode.classList.add(HIDE_CLASS);
+    }
+
+    syncWallpaper();
+  }
+
+  /* 离开登录页：还原补丁类并清除壁纸层标记，壁纸层保留 */
+  function removePatches() {
+    if (!patchesApplied) return;
+    patchesApplied = false;
+    var hidden = document.querySelectorAll("." + HIDE_CLASS);
+    for (var i = 0; i < hidden.length; i++) hidden[i].classList.remove(HIDE_CLASS);
+    var transparent = document.querySelectorAll("." + TRANSPARENT_CLASS);
+    for (var j = 0; j < transparent.length; j++) transparent[j].classList.remove(TRANSPARENT_CLASS);
+    var layer = document.getElementById(BG_ID);
+    if (layer) {
+      layer.removeAttribute(LOGIN_ATTR);
+      layer.removeAttribute("data-ol-active");
+      layer.removeAttribute(THEME_ATTR);
+    }
+  }
+
+  /* 彻底移除壁纸层与补丁 */
+  function teardown() {
+    patchesApplied = true;
+    removePatches();
+    var layer = document.getElementById(BG_ID);
+    if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
+  }
+
+  /* ---------- 观察者 ---------- */
+
+  /* 等待登录卡片挂载，命中后断开观察 */
+  function watchLogin() {
+    if (loginObserver || !document.body || typeof MutationObserver !== "function") return;
+    loginObserver = new MutationObserver(function () {
+      if (findLoginCard()) {
+        if (loginObserver) {
+          loginObserver.disconnect();
+          loginObserver = null;
+        }
+        apply();
+      }
+    });
+    loginObserver.observe(document.body, { childList: true, subtree: true });
+  }
+
+  /* 观察 body 类变化与子树重建，登录页子树重建时重挂补丁 */
+  function watchTheme() {
+    if (themeObserver || typeof MutationObserver !== "function") return;
+    themeObserver = new MutationObserver(function (records) {
+      if (location.pathname.indexOf(SHOW_PATH) !== 0) {
+        if (patchesApplied) removePatches();
+        return;
+      }
+      for (var i = 0; i < records.length; i++) {
+        if (records[i].type === "childList") {
+          guard();
+          return;
+        }
+      }
+      syncWallpaper();
+    });
+    themeObserver.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      childList: true,
+      attributeFilter: ["class"]
+    });
+  }
+
+  /* ---------- 路由感知 ---------- */
+
+  function guard() {
+    apply();
+  }
+
+  /* 包装 history API 并监听导航事件，只包装一次 */
+  function hookRouter() {
+    if (routerHooked) return;
+    routerHooked = true;
+    var push = history.pushState;
+    var replace = history.replaceState;
+    if (typeof push === "function") {
+      history.pushState = function () {
+        var ret = push.apply(this, arguments);
+        guard();
+        return ret;
+      };
+    }
+    if (typeof replace === "function") {
+      history.replaceState = function () {
+        var ret = replace.apply(this, arguments);
+        guard();
+        return ret;
+      };
+    }
+    window.addEventListener("popstate", guard);
+    window.addEventListener("hashchange", guard);
+  }
+
+  /* 页面隐藏时解绑监听与轮询 */
+  function unhookRouter() {
+    window.removeEventListener("popstate", guard);
+    window.removeEventListener("hashchange", guard);
+    if (pollTimer) {
+      window.clearInterval(pollTimer);
+      pollTimer = 0;
+    }
+    routerHooked = false;
+  }
+
+  /* 250ms 轮询兜底 */
+  function startPoll() {
+    if (pollTimer) return;
+    pollTimer = window.setInterval(guard, 250);
+  }
+
+  /* ---------- 启动 ---------- */
+
+  onReady(function () {
+    try {
+      hookRouter();
+      watchTheme();
+      apply();
+      startPoll();
+      window.addEventListener("pagehide", unhookRouter, { once: true });
+    } catch (e) {}
+  });
+
+  /* 调试入口 */
+  window.OL_LOGIN_BG = { apply: apply, teardown: teardown };
+})();
+</script>
