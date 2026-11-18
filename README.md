@@ -1,6 +1,6 @@
-# FantasticOpenList
+# <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openlist.svg" alt="openlist_svg"> Fantastic OpenList
 
-FantasticOpenList 是 OpenList 登录页美化方案：一段可直接粘贴的自定义头部脚本，将默认蓝色波浪背景替换为自定义深浅色壁纸，附带模糊与暗角遮罩。零侵入式，不修改服务端、不替换前端资源、不改动登录逻辑。
+Fantastic OpenList 是一个 OpenList 登录页和主页的美化方案：一段可直接粘贴的自定义头部脚本，将默认蓝色波浪背景替换为自定义深浅色壁纸，附带模糊与暗角遮罩。零侵入式，不修改服务端、不替换前端资源、不改动登录逻辑。
 
 ## 环境要求
 
