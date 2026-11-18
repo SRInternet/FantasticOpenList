@@ -1,4 +1,4 @@
-# <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openlist.svg" alt="openlist_svg"> Fantastic OpenList
+# <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openlist.svg" alt="openlist_svg" width="32" height="32"> Fantastic OpenList
 
 Fantastic OpenList 是一个 OpenList 登录页和主页的美化方案：一段可直接粘贴的自定义头部脚本，将默认蓝色波浪背景替换为自定义深浅色壁纸，附带模糊与暗角遮罩。零侵入式，不修改服务端、不替换前端资源、不改动登录逻辑。
 
@@ -15,6 +15,20 @@ Fantastic OpenList 是一个 OpenList 登录页和主页的美化方案：一段
 | [`custom/login-background.html`](custom/login-background.html) | 美化脚本，整段粘贴进自定义头部 |
 | [`docs/login-page-analysis.md`](docs/login-page-analysis.md) | `/@login` 页面结构与主题机制分析 |
 | [`tests/`](tests/) | 四套验证脚本 |
+
+## 使用效果
+
+<details>
+<summary>点击展开查看 / Click to view more photos</summary>
+<br>
+
+| 登录界面 | 主界面 |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/91ddbdd3-503c-484a-ac38-e6e55c5e1010" width="100%"> | <img src="https://github.com/user-attachments/assets/b9015f7e-f177-4db4-8e0d-4a96bac95f1b" width="100%"> |
+
+* 实际运行界面没有模糊和马赛克的遮挡！
+
+</details>
 
 ## 使用方法
 
